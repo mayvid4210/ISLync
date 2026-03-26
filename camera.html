@@ -79,7 +79,7 @@
   <div id="badge">Ready</div>
 </div>
 
-<!-- MediaPipe -->
+
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4/hands.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3/camera_utils.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
@@ -99,7 +99,7 @@ let prevY = null;
 let gestureBuffer = [];
 let motionBuffer = [];
 
-// -------- Audio Queue --------
+
 let audioQueue = [];
 let isPlaying = false;
 
@@ -115,7 +115,7 @@ function playNext() {
   audio.play();
 }
 
-// -------- WebSocket --------
+
 const ws = new WebSocket("ws://127.0.0.1:8000/ws");
 
 ws.onmessage = (event) => {
@@ -127,7 +127,7 @@ ws.onmessage = (event) => {
   }
 };
 
-// -------- Helpers --------
+
 function isFingerUp(tip, pip) {
   return tip.y < pip.y;
 }
@@ -139,7 +139,7 @@ function distance(a, b) {
   );
 }
 
-// -------- Static Gestures --------
+
 function detectStaticGesture(lm) {
   const index = isFingerUp(lm[8], lm[6]);
   const middle = isFingerUp(lm[12], lm[10]);
@@ -160,7 +160,7 @@ function detectStaticGesture(lm) {
   return null;
 }
 
-// -------- Motion Detection --------
+
 function detectMotion(lm) {
   const x = lm[0].x;
   const y = lm[0].y;
@@ -193,7 +193,7 @@ function detectMotion(lm) {
   return { motion: null, strength };
 }
 
-// -------- MediaPipe --------
+
 const hands = new Hands({
   locateFile: (file) =>
     `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4/${file}`
@@ -224,7 +224,7 @@ hands.onResults((results) => {
 
   let gesture = null;
 
-  // 🔥 PRIORITY: motion only if strong movement
+
   if (motionData.motion && motionData.strength > 0.05) {
     gesture = motionData.motion;
   } else {
@@ -233,7 +233,7 @@ hands.onResults((results) => {
 
   if (!gesture) return;
 
-  // -------- Smoothing --------
+
   gestureBuffer.push(gesture);
   if (gestureBuffer.length > 5) gestureBuffer.shift();
 
@@ -264,7 +264,7 @@ hands.onResults((results) => {
   }
 });
 
-// -------- Camera --------
+
 const camera = new Camera(video, {
   onFrame: async () => {
     await hands.send({ image: video });

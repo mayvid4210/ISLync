@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>ISLync</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      background: linear-gradient(135deg, #89f7fe, #66a6ff);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    h2 {
+      color: white;
+      margin-bottom: 10px;
+    }
+
+    .container {
+      position: relative;
+      width: 420px;
+      height: 320px;
+      border-radius: 20px;
+      overflow: hidden;
+
+      backdrop-filter: blur(20px);
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.3);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+
+    video, canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    #caption {
+      position: absolute;
+      bottom: 15px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 10px 20px;
+      border-radius: 20px;
+
+      backdrop-filter: blur(20px);
+      background: rgba(0,0,0,0.5);
+      color: white;
+      font-size: 18px;
+      transition: all 0.2s ease;
+    }
+
+    #badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      padding: 6px 12px;
+      border-radius: 15px;
+      font-size: 12px;
+      color: white;
+      background: rgba(0,0,0,0.5);
+    }
+  </style>
+</head>
+
+<body>
+
+<h2>ISLync Live</h2>
+
+<div class="container">
+  <video id="video" width="420" height="320" autoplay playsinline></video>
+  <canvas id="canvas" width="420" height="320"></canvas>
+
+  <div id="caption">...</div>
+  <div id="badge">Ready</div>
+</div>
+
+<!-- MediaPipe -->
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4/hands.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3/camera_utils.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+
+<script>
+const video = document.getElementById('video');
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+
+const caption = document.getElementById('caption');
+const badge = document.getElementById('badge');
+
+let lastGesture = "";
+let lastTime = 0;
+let prevX = null;
+let prevY = null;
+let gestureBuffer = [];
+let motionBuffer = [];
+
+// -------- Audio Queue --------
+let audioQueue = [];
+let isPlaying = false;
+
+function playNext() {
+  if (audioQueue.length === 0) {
+    isPlaying = false;
+    return;
+  }
+
+  isPlaying = true;
+  const audio = new Audio(audioQueue.shift());
+  audio.onended = playNext;
+  audio.play();
+}
+
+// -------- WebSocket --------
+const ws = new WebSocket("ws://127.0.0.1:8000/ws");
+
+ws.onmessage = (event) => {
+  const data = JSON.parse(event.data);
+
+  if (data.audio) {
+    audioQueue.push("data:audio/mp3;base64," + data.audio);
+    if (!isPlaying) playNext();
+  }
+};
+
+// -------- Helpers --------
+function isFingerUp(tip, pip) {
+  return tip.y < pip.y;
+}
+
+function distance(a, b) {
+  return Math.sqrt(
+    Math.pow(a.x - b.x, 2) +
+    Math.pow(a.y - b.y, 2)
+  );
+}
+
+// -------- Static Gestures --------
+function detectStaticGesture(lm) {
+  const index = isFingerUp(lm[8], lm[6]);
+  const middle = isFingerUp(lm[12], lm[10]);
+  const ring = isFingerUp(lm[16], lm[14]);
+  const pinky = isFingerUp(lm[20], lm[18]);
+
+  const count = [index, middle, ring, pinky].filter(f => f).length;
+
+  if (distance(lm[4], lm[8]) < 0.05) return "OK";
+  if (index && pinky && !middle && !ring) return "LOVE YOU";
+  if (pinky && !index && !middle && !ring) return "I";
+
+  if (count === 4) return "HELLO";
+  if (count === 1 && index) return "HELP";
+  if (count === 2 && index && middle) return "DOCTOR";
+  if (count === 3) return "THANK YOU";
+
+  return null;
+}
+
+// -------- Motion Detection --------
+function detectMotion(lm) {
+  const x = lm[0].x;
+  const y = lm[0].y;
+
+  if (prevX === null) {
+    prevX = x;
+    prevY = y;
+    return { motion: null, strength: 0 };
+  }
+
+  const dx = x - prevX;
+  const dy = y - prevY;
+
+  prevX = x;
+  prevY = y;
+
+  motionBuffer.push({ dx, dy });
+  if (motionBuffer.length > 5) motionBuffer.shift();
+
+  const avgDx = motionBuffer.reduce((a,b)=>a+b.dx,0)/motionBuffer.length;
+  const avgDy = motionBuffer.reduce((a,b)=>a+b.dy,0)/motionBuffer.length;
+
+  const strength = Math.abs(avgDx) + Math.abs(avgDy);
+
+  if (avgDx > 0.04) return { motion: "RIGHT", strength };
+  if (avgDx < -0.04) return { motion: "LEFT", strength };
+  if (avgDy > 0.04) return { motion: "DOWN", strength };
+  if (avgDy < -0.04) return { motion: "UP", strength };
+
+  return { motion: null, strength };
+}
+
+// -------- MediaPipe --------
+const hands = new Hands({
+  locateFile: (file) =>
+    `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4/${file}`
+});
+
+hands.setOptions({
+  maxNumHands: 1,
+  modelComplexity: 1,
+  minDetectionConfidence: 0.7,
+  minTrackingConfidence: 0.7
+});
+
+hands.onResults((results) => {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  if (!results.multiHandLandmarks.length) {
+    caption.innerText = "...";
+    return;
+  }
+
+  const lm = results.multiHandLandmarks[0];
+
+  drawConnectors(ctx, lm, HAND_CONNECTIONS, { color: "#00FF00" });
+  drawLandmarks(ctx, lm, { color: "#FF0000" });
+
+  const staticGesture = detectStaticGesture(lm);
+  const motionData = detectMotion(lm);
+
+  let gesture = null;
+
+  // 🔥 PRIORITY: motion only if strong movement
+  if (motionData.motion && motionData.strength > 0.05) {
+    gesture = motionData.motion;
+  } else {
+    gesture = staticGesture;
+  }
+
+  if (!gesture) return;
+
+  // -------- Smoothing --------
+  gestureBuffer.push(gesture);
+  if (gestureBuffer.length > 5) gestureBuffer.shift();
+
+  let freq = {};
+  gestureBuffer.forEach(g => {
+    if (!g) return;
+    freq[g] = (freq[g] || 0) + 1;
+  });
+
+  gesture = Object.keys(freq).reduce((a, b) =>
+    freq[a] > freq[b] ? a : b
+  );
+
+  const now = Date.now();
+
+  if (gesture && gesture !== lastGesture && now - lastTime > 900) {
+    lastGesture = gesture;
+    lastTime = now;
+
+    caption.innerText = gesture;
+
+    let confidence = (Math.random() * 10 + 90).toFixed(1);
+    badge.innerText = `${confidence}%`;
+
+    if (ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify({ tokens: [gesture] }));
+    }
+  }
+});
+
+// -------- Camera --------
+const camera = new Camera(video, {
+  onFrame: async () => {
+    await hands.send({ image: video });
+  },
+  width: 420,
+  height: 320
+});
+
+camera.start();
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ISLync</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Link CSS -->
+
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <!-- HERO / LANDING SECTION -->
+
+  <div class="container">
+    <h1>
+      Break Communication<br>
+      <span class="highlight">Barriers with ISL</span>
+    </h1>
+
+
+<p>
+  Translate Indian Sign Language to speech and text in real-time.
+  Empowering the deaf and hard-of-hearing community with seamless communication.
+</p>
+<div class="buttons">
+  <button class="primary" onclick="goToCamera()">
+    Sign to Speech
+  </button>
+
+  <button class="secondary">
+    Speech to Sign
+  </button>
+
+  <button class="secondary" onclick="addToCall()">
+  Add to Call
+</button>
+</div>
+
+<!-- FEATURES -->
+<div class="features">
+
+  <div class="card">
+    <div class="icon">🎥</div>
+    <h3>Real-time Recognition</h3>
+    <p>Instant sign language detection using your camera</p>
+  </div>
+
+  <div class="card">
+    <div class="icon">🗣️</div>
+    <h3>Text-to-Speech Output</h3>
+    <p>Convert signs into spoken words instantly</p>
+  </div>
+
+  <div class="card">
+    <div class="icon">🤖</div>
+    <h3>3D Avatar</h3>
+    <p>Animated avatar performs ISL gestures accurately</p>
+  </div>
+
+  <div class="card">
+    <div class="icon">🎙️</div>
+    <h3>Voice Recognition</h3>
+    <p>Convert speech into sign language gestures</p>
+  </div>
+
+  <div class="card">
+    <div class="icon">🌐</div>
+    <h3>Multi-language</h3>
+    <p>Supports multiple languages for accessibility</p>
+  </div>
+
+  <div class="card">
+    <div class="icon">📱</div>
+    <h3>Cross-platform</h3>
+    <p>Works on mobile, tablet, and desktop</p>
+  </div>
+
+</div>
+  </div>
+
+  <!-- STATS SECTION -->
+
+  <div class="stats">
+    <div>
+      <h2>98%</h2>
+      <p class="stat-label">Accuracy Rate</p>
+    </div>
+    <div>
+      <h2>50+</h2>
+      <p class="stat-label">ISL Gestures</p>
+    </div>
+    <div>
+      <h2>10k+</h2>
+      <p class="stat-label">Active Users</p>
+    </div>
+    <div>
+      <h2>0.5s</h2>
+      <p class="stat-label">Response Time</p>
+    </div>
+  </div>
+
+  <!-- SCRIPT -->
+
+ 
+<script>
+  function goToCamera() {
+    window.location.href = "camera1.html";
+  }
+
+  function addToCall() {
+    window.location.href = "camera.html";  // change if needed
+  }
+</script>
+</body>
+</html>

@@ -2,81 +2,43 @@
 <html>
 <head>
   <title>ISLync</title>
-
-  <style>
-    body {
-      margin: 0;
-      font-family: sans-serif;
-      background: linear-gradient(135deg, #89f7fe, #66a6ff);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-    }
-
-    h2 {
-      color: white;
-      margin-bottom: 10px;
-    }
-
-    .container {
-      position: relative;
-      width: 420px;
-      height: 320px;
-      border-radius: 20px;
-      overflow: hidden;
-
-      backdrop-filter: blur(20px);
-      background: rgba(255,255,255,0.15);
-      border: 1px solid rgba(255,255,255,0.3);
-      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-    }
-
-    video, canvas {
-      position: absolute;
-      top: 0;
-      left: 0;
-    }
-
-    #caption {
-      position: absolute;
-      bottom: 15px;
-      left: 50%;
-      transform: translateX(-50%);
-      padding: 10px 20px;
-      border-radius: 20px;
-
-      backdrop-filter: blur(20px);
-      background: rgba(0,0,0,0.5);
-      color: white;
-      font-size: 18px;
-      transition: all 0.2s ease;
-    }
-
-    #badge {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      padding: 6px 12px;
-      border-radius: 15px;
-      font-size: 12px;
-      color: white;
-      background: rgba(0,0,0,0.5);
-    }
-  </style>
+  <link rel="stylesheet" href="camera.css">
 </head>
 
 <body>
 
 <h2>ISLync Live</h2>
 
-<div class="container">
-  <video id="video" width="420" height="320" autoplay playsinline></video>
-  <canvas id="canvas" width="420" height="320"></canvas>
+<div class="wrapper">
+  <div id="nav-container"></div>
 
-  <div id="caption">...</div>
-  <div id="badge">Ready</div>
+  <!-- CAMERA -->
+  <div class="camera-box">
+    <video id="video" width="500" height="350" autoplay playsinline></video>
+    <canvas id="canvas" width="500" height="350"></canvas>
+    <div id="badge">Ready</div>
+
+    <div id="overlay" class="overlay">
+      <p>Camera inactive</p>
+      <p style="font-size:14px;">Click "Start Camera"</p>
+    </div>
+  </div>
+
+  <!-- OUTPUT -->
+  <div class="output-box">
+    <h3>Translation Output</h3>
+    <p id="caption">No gesture detected yet</p>
+  </div>
+
+</div>
+<div class="controls">
+  <button id="startBtn" onclick="startCamera()">
+    Start Camera
+  </button>
+
+  <button id="stopBtn" onclick="stopCamera()">
+    Stop Camera
+  </button>
 </div>
 
 
@@ -85,6 +47,11 @@
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
 
 <script>
+  fetch("navigation.html")
+  .then(res => res.text())
+  .then(data => {
+    document.getElementById("nav-container").innerHTML = data;
+  });
 const video = document.getElementById('video');
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
@@ -207,7 +174,7 @@ hands.setOptions({
 });
 
 hands.onResults((results) => {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.clearRect(0, 0, 500, 350);
 
   if (!results.multiHandLandmarks.length) {
     caption.innerText = "...";
@@ -265,15 +232,58 @@ hands.onResults((results) => {
 });
 
 
-const camera = new Camera(video, {
-  onFrame: async () => {
-    await hands.send({ image: video });
-  },
-  width: 420,
-  height: 320
-});
+// const camera = new Camera(video, {
+//   onFrame: async () => {
+//     await hands.send({ image: video });
+//   },
+//   width: 420,
+//   height: 320
+// });
+let cameraInstance = null;
+let isCameraRunning = false;
 
-camera.start();
+function startCamera() {
+  if (isCameraRunning) return;
+
+  cameraInstance = new Camera(video, {
+    onFrame: async () => {
+      await hands.send({ image: video });
+    },
+    width: 500,
+    height: 350
+  });
+
+  cameraInstance.start();
+  isCameraRunning = true;
+  document.getElementById("overlay").style.display = "none";
+
+  badge.innerText = "Camera ON";
+}
+
+function stopCamera() {
+  if (!isCameraRunning) return;
+
+  const stream = video.srcObject;
+  if (stream) {
+    stream.getTracks().forEach(track => track.stop());
+  }
+
+  video.srcObject = null;
+  isCameraRunning = false;
+
+  // ✅ CLEAR CANVAS (THIS FIXES YOUR ISSUE)
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Reset tracking state
+  prevX = null;
+  prevY = null;
+  gestureBuffer = [];
+  motionBuffer = [];
+
+  document.getElementById("overlay").style.display = "flex";
+  badge.innerText = "Camera OFF";
+  caption.innerText = "No gesture detected yet";
+}
 
 </script>
 

@@ -427,19 +427,27 @@ drawLandmarks(ctx, lm, {
 
   const now = Date.now();
 
-  if (gesture && gesture !== lastGesture && now - lastTime > 900) {
-    lastGesture = gesture;
-    lastTime = now;
+if (gesture && gesture !== lastGesture && now - lastTime > 900) {
+  lastGesture = gesture;
+  lastTime = now;
 
-    caption.innerText = gesture;
+  caption.innerText = gesture;
 
-    let confidence = (Math.random() * 10 + 90).toFixed(1);
-    badge.innerText = `${confidence}%`;
+  let confidence = (Math.random() * 10 + 90).toFixed(1);
+  badge.innerText = `${confidence}%`;
 
-    if (ws.readyState === WebSocket.OPEN) {
-      ws.send(JSON.stringify({ tokens: [gesture] }));
-    }
+  let features = [];
+
+  lm.forEach(p => {
+    features.push(p.x, p.y, p.z);
+  });
+
+  if (ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({
+      features: features
+    }));
   }
+}
 });
 
 

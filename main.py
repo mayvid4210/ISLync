@@ -1,6 +1,7 @@
 from fastapi import FastAPI, WebSocket
 from nlp import process_tokens
 from tts import text_to_speech
+from predict import predict_gesture
 
 app = FastAPI()
 
@@ -10,9 +11,15 @@ async def websocket_endpoint(websocket: WebSocket):
     
     while True:
         data = await websocket.receive_json()
-        tokens = data.get("tokens", [])
         
-        print("Received tokens:", tokens)
+        features = data.get("features", [])
+        
+        if not features:
+            continue
+            
+        gesture = predict_gesture(features)
+        
+        print("Predicted:", gesture)
 
         sentence = process_tokens(tokens)
         audio = text_to_speech(sentence)

@@ -10,7 +10,7 @@ const LandingPage = ({ setCurrentPage }) => {
           <div className="text-center">
             <div className="inline-flex items-center px-4 py-2 bg-primary-100 rounded-full mb-6">
               <span className="text-sm font-semibold text-primary-700">
-                AI-Powered Translation
+                Real Time Translation
               </span>
             </div>
             <h1 className="text-5xl lg:text-6xl font-bold mb-6">
@@ -21,7 +21,7 @@ const LandingPage = ({ setCurrentPage }) => {
             </h1>
             <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
               Translate Indian Sign Language to speech and text in real-time.
-              Our AI-powered platform makes communication accessible for everyone.
+              Empowering the deaf and hard-of-hearing community with seamless communication.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <button 

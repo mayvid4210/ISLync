@@ -2,81 +2,253 @@
 <html>
 <head>
   <title>ISLync</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded" rel="stylesheet" />  
+<style>
+body {
+  margin: 0;
+  background: #000;
+  font-family: sans-serif;
+  overflow: hidden;
+}
 
-  <style>
-    body {
-      margin: 0;
-      font-family: sans-serif;
-      background: linear-gradient(135deg, #89f7fe, #66a6ff);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-    }
+/* ---------- TOP BAR ---------- */
+.top-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 95px;
+  background: #111;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 
-    h2 {
-      color: white;
-      margin-bottom: 10px;
-    }
+.participants-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
 
-    .container {
-      position: relative;
-      width: 420px;
-      height: 320px;
-      border-radius: 20px;
-      overflow: hidden;
+.participants {
+  display: flex;
+  gap: 12px;
+}
 
-      backdrop-filter: blur(20px);
-      background: rgba(255,255,255,0.15);
-      border: 1px solid rgba(255,255,255,0.3);
-      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-    }
+/* participant tile */
+.participant {
+  width: 140px;
+  height: 75px;
+  background: #222;
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+  color:white;
+}
 
-    video, canvas {
-      position: absolute;
-      top: 0;
-      left: 0;
-    }
+/* avatar circle */
+.avatar {
+  width: 100%;
+  height: 100%;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  font-weight: 500;
+  color: white;
+}
 
-    #caption {
-      position: absolute;
-      bottom: 15px;
-      left: 50%;
-      transform: translateX(-50%);
-      padding: 10px 20px;
-      border-radius: 20px;
+/* colors */
+.green { background: #137333; }
+.blue { background: #1a73e8; }
+.purple { background: #9334e6; }
+.orange { background: #ea8600; }
+.red { background: #d93025; }
+.teal { background: #00897b; }
 
-      backdrop-filter: blur(20px);
-      background: rgba(0,0,0,0.5);
-      color: white;
-      font-size: 18px;
-      transition: all 0.2s ease;
-    }
+/* name label */
+.participant span {
+  position: absolute;
+  bottom: 4px;
+  left: 6px;
+  font-size: 11px;
+  background: rgba(0,0,0,0.6);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
 
-    #badge {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      padding: 6px 12px;
-      border-radius: 15px;
-      font-size: 12px;
-      color: white;
-      background: rgba(0,0,0,0.5);
-    }
+/* arrows */
+.arrow {
+  color: white;
+  font-size: 26px;
+  cursor: pointer;
+  padding: 0 8px;
+}
+
+/* ---------- VIDEO ---------- */
+.container {
+  position: absolute;
+  top: 95px;
+  bottom: 90px;
+  left: 0;
+  right: 0;
+  background: black;
+}
+
+video, canvas {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* caption */
+#caption {
+  position: absolute;
+  bottom: 70px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.65);
+  padding: 14px 24px;
+  border-radius: 8px;
+  color: white;
+  font-size: 26px;
+  font-weight: 600;
+  text-align: center;
+  max-width: 65%;
+}
+
+/* confidence badge */
+#badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: rgba(0,0,0,0.6);
+  padding: 6px 10px;
+  border-radius: 6px;
+  color: white;
+}
+
+/* ---------- CONTROLS ---------- */
+.controls {
+  position: absolute;
+  bottom: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 14px;
+  background: rgba(32,33,36,0.95);
+  padding: 14px 20px;
+  border-radius: 40px;
+}
+
+.icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: none;
+  background: #3c4043;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.icon:hover {
+  background: #5f6368;
+}
+
+.material-symbols-rounded {
+  font-size: 28px;
+}
+
+.leave {
+  background: #ea4335 !important;
+}
   </style>
 </head>
 
 <body>
+  <div class="top-bar">
+  <div class="participants-wrapper">
 
-<h2>ISLync Live</h2>
+    <div class="arrow">❮</div>
 
+    <div class="participants">
+      <div class="participant">
+        <div class="avatar green">A</div>
+        <span>Alex</span>
+      </div>
+
+      <div class="participant">
+        <div class="avatar blue">M</div>
+        <span>Maria</span>
+      </div>
+
+      <div class="participant">
+        <div class="avatar purple">J</div>
+        <span>John</span>
+      </div>
+
+      <div class="participant">
+        <div class="avatar orange">P</div>
+        <span>Priya</span>
+      </div>
+    </div>
+
+    <div class="arrow">❯</div>
+
+  </div>
+</div>
 <div class="container">
-  <video id="video" width="420" height="320" autoplay playsinline></video>
-  <canvas id="canvas" width="420" height="320"></canvas>
+  <video id="video" autoplay playsinline></video>
+  <canvas id="canvas"></canvas>
 
   <div id="caption">...</div>
-  <div id="badge">Ready</div>
+  <div id="badge">You</div>
+</div>
+<div class="controls">
+  <button class="icon">
+    <span class="material-symbols-rounded">keyboard_arrow_up</span>
+  </button>
+
+  <button class="icon">
+    <span class="material-symbols-rounded">mic</span>
+  </button>
+
+  <button class="icon">
+    <span class="material-symbols-rounded">keyboard_arrow_up</span>
+  </button>
+
+  <button class="icon">
+    <span class="material-symbols-rounded">videocam</span>
+  </button>
+
+  <button class="icon">
+    <span class="material-symbols-rounded">closed_caption</span>
+  </button>
+
+  <button class="icon active">
+    <span class="material-symbols-rounded">mood</span>
+  </button>
+
+  <button class="icon">
+    <span class="material-symbols-rounded">present_to_all</span>
+  </button>
+
+  <button class="icon">
+    <span class="material-symbols-rounded">pan_tool</span>
+  </button>
+
+  <button class="icon">
+    <span class="material-symbols-rounded">more_vert</span>
+  </button>
+
+  <button class="icon leave">
+    <span class="material-symbols-rounded">call_end</span>
+  </button>
 </div>
 
 
@@ -216,9 +388,15 @@ hands.onResults((results) => {
 
   const lm = results.multiHandLandmarks[0];
 
-  drawConnectors(ctx, lm, HAND_CONNECTIONS, { color: "#00FF00" });
-  drawLandmarks(ctx, lm, { color: "#FF0000" });
+ drawConnectors(ctx, lm, HAND_CONNECTIONS, {
+  color: "#ffffff",
+  lineWidth: 1
+});
 
+drawLandmarks(ctx, lm, {
+  color: "#ff3b3b",   // red dots
+  radius: 1           // smaller dots
+});
   const staticGesture = detectStaticGesture(lm);
   const motionData = detectMotion(lm);
 

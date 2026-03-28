@@ -21,7 +21,7 @@ async def websocket_endpoint(websocket: WebSocket):
         
         print("Predicted:", gesture)
 
-        sentence = process_tokens(tokens)
+        sentence = process_tokens([gesture])
         audio = text_to_speech(sentence)
         
         await websocket.send_json({
